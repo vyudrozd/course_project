@@ -4,18 +4,19 @@ import { FaDoorOpen, FaDoorClosed, FaSignOutAlt } from 'react-icons/all';
 import RegistrationModal from './Modal/RegistrationModal';
 
 const exitBtnHandler = (setToken) => {
-  localStorage.setItem('whitenetWebToken', null);
-  setToken(null);
+  localStorage.setItem('whitenetWebToken', 'null');
+  setToken('null');
 };
 
 function Header({ className, token, setToken }) {
   const [door, setDoor] = useState(<FaDoorClosed size="3em" />);
   const [modalShow, setModalShow] = useState(false);
+
   return (
     <>
       <div className={className}>
         <div>
-          {token !== null ? (
+          {token !== 'null' ? (
             <button
               onClick={() => exitBtnHandler(setToken)}
             >
@@ -43,10 +44,11 @@ function Header({ className, token, setToken }) {
 
 export default styled(Header)`
     background-color: rgba(0,0,0,0);
-    position: fixed;
-    width: 100%;
-    display: flex;
-    flex-direction: row-reverse;
+    margin-left: auto;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    float: right;
     z-index: 9;
     button{
         padding: 5px;

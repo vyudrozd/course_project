@@ -5,6 +5,24 @@ import CouplingClickPopup from '../Popup/CouplingClickPopup';
 import WireClickPopup from '../Popup/WireClickPopup';
 import serverData from '../../const/serverData';
 
+const removeLayers = (map) => {
+  let mapLayer = map.getSource('lines-source');
+  if (mapLayer) {
+    map.removeLayer('lines');
+    map.removeSource('lines-source');
+  }
+  mapLayer = map.getSource('points-source');
+  if (mapLayer) {
+    map.removeLayer('points');
+    map.removeSource('points-source');
+  }
+  mapLayer = map.getSource('user-points-source');
+  if (mapLayer) {
+    map.removeLayer('user-points');
+    map.removeSource('user-points-source');
+  }
+};
+
 const addMapClickEvent = ({
   map, token, setPopup, reloadMap,
 }) => {
@@ -95,6 +113,7 @@ const addMapClickEvent = ({
         ) : (
           <CouplingClickPopup
             id={id}
+            e={e}
             setParent={setParent}
             reloadMap={reloadMap}
             setPopup={setPopup}
@@ -114,21 +133,27 @@ const addMapClickEvent = ({
 };
 
 const loadMap = async ({
-  map, token, firstTime, setPopup,
+  map, token, setPopup,
 }) => {
   let responseData = await fetch(`${serverData.serverLink}api/wires/`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
-  }).then((response) => response.json());
+  }).then((response) => {
+    if (response.status !== 200) {
+      alert('Произошла ошибка! Повторите запрос');
+    }
+    return response.json();
+  });
 
   const { data: linesData } = responseData;
 
-
-  if (!firstTime) {
+  let mapLayer = map.getSource('lines-source');
+  if (mapLayer) {
     map.removeLayer('lines');
     map.removeSource('lines-source');
   }
+
   map.addSource('lines-source', {
     type: 'geojson',
     data: linesData,
@@ -151,7 +176,12 @@ const loadMap = async ({
     headers: {
       Authorization: `Bearer ${token}`,
     },
-  }).then((response) => response.json());
+  }).then((response) => {
+    if (response.status !== 200) {
+      alert('Произошла ошибка! Повторите запрос');
+    }
+    return response.json();
+  });
 
   const { data: dotsData } = responseData;
 
@@ -160,7 +190,8 @@ const loadMap = async ({
     features: dotsData.features.filter((point) => point.properties.type_of_box === 'regular'),
   };
 
-  if (!firstTime) {
+  mapLayer = map.getSource('points-source');
+  if (mapLayer) {
     map.removeLayer('points');
     map.removeSource('points-source');
   }
@@ -169,8 +200,6 @@ const loadMap = async ({
     type: 'geojson',
     data: regularData,
   });
-
-  // Здесь мы добавляем слой линий из источника "test-source"
   map.addLayer({
     id: 'points',
     type: 'circle',
@@ -187,7 +216,8 @@ const loadMap = async ({
     features: dotsData.features.filter((point) => point.properties.type_of_box === 'client'),
   };
 
-  if (!firstTime) {
+  mapLayer = map.getSource('user-points-source');
+  if (mapLayer) {
     map.removeLayer('user-points');
     map.removeSource('user-points-source');
   }
@@ -197,16 +227,35 @@ const loadMap = async ({
     data: userData,
   });
 
-  map.addLayer({
-    id: 'user-points',
-    type: 'circle',
-    source: 'user-points-source',
-    paint: {
-      'circle-radius': 5,
-      'circle-color': '#00ff00',
+  map.loadImage(
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Noun_Project_house_icon_475319_cc.svg/251px-Noun_Project_house_icon_475319_cc.svg.png',
+    (error, image) => {
+      if (error) {
+        map.addLayer({
+          id: 'user-points',
+          type: 'circle',
+          source: 'user-points-source',
+          paint: {
+            'circle-radius': 5,
+            'circle-color': '#00ff00',
+          },
+          filter: ['in', '$type', 'Point'],
+        });
+      } else {
+        map.addImage('cat', image);
+
+        map.addLayer({
+          id: 'user-points',
+          type: 'symbol',
+          source: 'user-points-source',
+          layout: {
+            'icon-image': 'cat',
+            'icon-size': 0.12,
+          },
+        });
+      }
     },
-    filter: ['in', '$type', 'Point'],
-  });
+  );
 
   map.on('mouseenter', 'points', () => {
     map.getCanvas().style.cursor = 'pointer';
@@ -241,11 +290,11 @@ const loadMap = async ({
 };
 
 export default (map, token, setPopup) => {
-  if (token !== null) {
-    map.once('load', () => {
-      loadMap({
-        map, token, firstTime: true, setPopup,
-      });
+  if (token !== 'null') {
+    loadMap({
+      map, token, setPopup,
     });
+  } else {
+    removeLayers(map);
   }
 };

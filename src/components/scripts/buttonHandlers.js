@@ -6,6 +6,12 @@ const deleteWire = async (id) => fetch(`${serverData.serverLink}api/wires/${id}`
   headers: {
     Authorization: `Bearer ${localStorage.getItem('whitenetWebToken')}`,
   },
+}).then((response) => {
+  if (response.status !== 200) {
+    alert('Произошла ошибка! Повторите запрос');
+    return;
+  }
+  return response.json();
 });
 
 const deletePoint = async (id) => fetch(`${serverData.serverLink}api/boxes/${id}`, {
@@ -13,6 +19,12 @@ const deletePoint = async (id) => fetch(`${serverData.serverLink}api/boxes/${id}
   headers: {
     Authorization: `Bearer ${localStorage.getItem('whitenetWebToken')}`,
   },
+}).then((response) => {
+  if (response.status !== 200) {
+    alert('Произошла ошибка! Повторите запрос');
+    return;
+  }
+  return response.json();
 });
 
 export {

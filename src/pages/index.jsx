@@ -5,6 +5,7 @@ import Header from '../components/Header';
 
 export default function MapPage() {
   const [token, setToken] = useState(localStorage.getItem('whitenetWebToken'));
+
   return (
     <StrictMode>
       <Header

@@ -18,7 +18,7 @@ function WireClickPopup({
         </button>
       </CrossPlace>
       <div className={className}>
-        <button onClick={async () => { await deleteWire(id); reloadMap(); closePopup(); }}>
+        <button className="control" onClick={async () => { await deleteWire(id).then(() => { closePopup(); setTimeout(() => reloadMap(), 1000); }); }}>
           Удалить линию
         </button>
       </div>
@@ -39,5 +39,15 @@ const CrossPlace = styled.div`
 `;
 
 export default styled(WireClickPopup)`
-    
+    .control{
+        width: 100%;
+        border: 1px solid #FFFAFA;
+        height: 40px;
+        color: white;
+        cursor: pointer;
+        background-color: #4573d5;
+        &:hover{
+          background-color: #0627df;
+        }
+    }
 `;

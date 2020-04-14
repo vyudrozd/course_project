@@ -25,12 +25,16 @@ function RegistrationModal({
         },
         body: JSON.stringify(body),
       }).then((response) => response.json());
-      if (responseData) {
+      if (responseData.success) {
         const { data: { token } } = responseData;
         localStorage.setItem('whitenetWebToken', token);
         setShow(false);
         setToken(token);
+      } else {
+        alert('Данные введены неверно');
       }
+    } else {
+      alert('Данные введены неверно');
     }
   };
 

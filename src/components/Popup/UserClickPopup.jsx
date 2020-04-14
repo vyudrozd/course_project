@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { AiOutlineClose, AiOutlineUser } from 'react-icons/all';
+import CouplingDataChangeModal from '../Modal/CouplingDataChangeModal';
 import serverData from '../../const/serverData';
 import { deletePoint } from '../scripts/buttonHandlers';
 
@@ -42,7 +43,7 @@ function intervalManager() {
           data: properties.mac,
         }]);
       }
-    }, 3000);
+    }, 2000);
   }
   function killInterval() {
     clearInterval(interval);
@@ -59,9 +60,31 @@ function UserClickPopup({
   id,
   setParent,
   reloadMap,
+  e = {
+    features: [{
+      properties: {
+
+      },
+    }],
+  },
   setPopup,
 }) {
   const closePopup = () => setPopup({});
+  const [show, setShow] = useState(false);
+  const [coupling, setCoupling] = useState({});
+  const handleChangeDataBtn = async () => {
+    const couplingData = await fetch(`${serverData.serverLink}api/boxes/${id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('whitenetWebToken')}`,
+      },
+    }).then((response) => response.json());
+
+    const { data: { properties } } = couplingData;
+
+    setCoupling(properties);
+    setShow(true);
+  };
+
   const data = fetch(`${serverData.serverLink}api/boxes/${id}`, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('whitenetWebToken')}`,
@@ -70,14 +93,14 @@ function UserClickPopup({
 
   const [userData, setUserData] = useState([{
     label: 'Name',
-    data: '',
+    data: e.features ? e.features[0].properties.name : '',
   },
   {
     label: 'ID',
-    data: '',
+    data: id,
   }, {
     label: 'Description',
-    data: '',
+    data: e.features ? e.features[0].properties.description : '',
   },
   {
     label: 'Status',
@@ -128,46 +151,60 @@ function UserClickPopup({
   }, [dataUpdate, id]);
 
   return (
-    <div className={className}>
-      <CrossPlace>
-        <button onClick={() => closePopup()}>
-          <AiOutlineClose size="1em" />
-        </button>
-      </CrossPlace>
-      <UserIconPlace>
-        <AiOutlineUser size="3em" />
-      </UserIconPlace>
-      <TablePlace>
-        <tbody>
-          {userData.map((element, index) => (
-            <tr key={`keyArray${index}`}>
-              <th>
-                {element.label}
-              </th>
-              <td>
-                {element.data}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </TablePlace>
-      <div>
-        <div>
-          <button onClick={() => {
-            setParent();
-            closePopup();
-          }}
-          >
-            Соединить пользователя
+    <>
+      <div className={className}>
+        <CrossPlace>
+          <button onClick={() => closePopup()}>
+            <AiOutlineClose size="1em" />
           </button>
-        </div>
+        </CrossPlace>
+        <UserIconPlace>
+          <AiOutlineUser size="3em" />
+        </UserIconPlace>
+        <TablePlace>
+          <tbody>
+            {userData.map((element, index) => (
+              <tr key={`keyArray${index}`}>
+                <th>
+                  {element.label}
+                </th>
+                <td>
+                  {element.data}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </TablePlace>
         <div>
-          <button onClick={() => { deletePoint(id); closePopup(); reloadMap(); }}>
-            Удалить муфту
-          </button>
+          <div>
+            <button
+              className="control"
+              onClick={() => {
+                setParent();
+                closePopup();
+              }}
+            >
+              Соединить пользователя
+            </button>
+          </div>
+          <div>
+            <button className="control" onClick={async () => { await deletePoint(id).then(() => { closePopup(); setTimeout(() => reloadMap(), 1000); }); }}>
+              Удалить муфту
+            </button>
+          </div>
+          <div>
+            <button className="control" onClick={() => handleChangeDataBtn()}>
+              Изменить данные
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+      <CouplingDataChangeModal
+        show={show}
+        setShow={setShow}
+        coupling={coupling}
+      />
+    </>
   );
 }
 
@@ -205,8 +242,16 @@ const TablePlace = styled.table`
 `;
 
 export default styled(UserClickPopup)`
-    button{
-        min-width: 100%:
+    .control{
+        width: 100%;
+        border: 1px solid #FFFAFA;
+        height: 40px;
+        color: white;
+        cursor: pointer;
+        background-color: #4573d5;
+        &:hover{
+          background-color: #0627df;
+        }
     }
     min-width: 300px;
 `;

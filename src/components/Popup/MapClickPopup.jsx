@@ -13,38 +13,50 @@ function MapClickPopup({
   const [userCoupling, setUserCoupling] = useState(false);
   const closePopup = () => setPopup({});
   return (
-    <div>
-      <CrossPlace>
-        <button onClick={() => closePopup()}>
-          <AiOutlineClose size="1em" />
-        </button>
-      </CrossPlace>
-      <div className={className}>
-        <div>
-          <button onClick={() => { setUserCoupling(false); setShow(true); }}>
-            Добавить муфту
+    <>
+      <div>
+        <CrossPlace>
+          <button onClick={() => closePopup()}>
+            <AiOutlineClose size="1em" />
           </button>
+        </CrossPlace>
+        <div className={className}>
+          <div>
+            <button onClick={() => { setUserCoupling(false); setShow(true); }}>
+              Добавить муфту
+            </button>
+          </div>
+          <div>
+            <button onClick={() => { setUserCoupling(true); setShow(true); }}>
+              Добавить пользователя
+            </button>
+          </div>
         </div>
-        <div>
-          <button onClick={() => { setUserCoupling(true); setShow(true); }}>
-            Добавить пользователя
-          </button>
-        </div>
-        <CouplingCreationModal
-          show={show}
-          setShow={setShow}
-          userCoupling={userCoupling}
-          loadMap={reloadMap}
-          closePopup={closePopup}
-          e={e}
-        />
       </div>
-    </div>
+      <CouplingCreationModal
+        show={show}
+        setShow={setShow}
+        userCoupling={userCoupling}
+        loadMap={reloadMap}
+        closePopup={closePopup}
+        e={e}
+      />
+    </>
   );
 }
 
 export default styled(MapClickPopup)`
-    
+    button{
+        width: 100%;
+        border: 1px solid #FFFAFA;
+        height: 40px;
+        color: white;
+        cursor: pointer;
+        background-color: #4573d5;
+        &:hover{
+          background-color: #0627df;
+        }
+    }
 `;
 
 const CrossPlace = styled.div`

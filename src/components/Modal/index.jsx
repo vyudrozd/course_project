@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import styled from 'styled-components';
-import { FaCross } from 'react-icons/all';
+
+const modalRoot = document.getElementById('modal');
 
 function Modal({
   className,
@@ -8,16 +10,22 @@ function Modal({
   setShow,
   children,
 } = {}) {
+  const [modalEl] = useState(document.createElement('div'));
+
+  useEffect(() => {
+    modalRoot.appendChild(modalEl);
+
+    return () => modalRoot.removeChild(modalEl);
+  }, [show, modalEl]);
+
   if (!show) return null;
-  return (
+  return createPortal(
     <>
       <div className={className}>
         {children}
       </div>
-      <CloseField onClick={() => setShow(!show)}>
-        <FaCross size="2em" />
-      </CloseField>
-    </>
+      <CloseField onClick={() => setShow(!show)} />
+    </>, modalEl,
   );
 }
 
@@ -36,8 +44,7 @@ export default styled(Modal)`
     position: absolute;
     top: 50%;
     left: 50%;
-    min-width: 250px;
-    min-height: 100px;
+    min-width: 300px;
     padding: 15px;
     border-radius: 10px;
     transform: translate(-50%, -50%);

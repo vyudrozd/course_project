@@ -3,22 +3,19 @@ import styled from 'styled-components';
 import Modal from '.';
 import serverData from '../../const/serverData';
 
-function CouplingCreactionModal({
+function CouplingDataChangeModal({
   className,
   show,
   setShow,
-  userCoupling,
-  loadMap,
-  closePopup,
-  e,
+  coupling,
 }) {
-  const [couplingName, setName] = useState('');
-  const [couplingDescription, setDescription] = useState('');
+  const [couplingName, setName] = useState(coupling.name);
+  const [couplingDescription, setDescription] = useState(coupling.description);
 
   const postCoupling = async (data) => {
     const response = await fetch(
-      `${serverData.serverLink}api/boxes/`, {
-        method: 'post',
+      `${serverData.serverLink}api/boxes/${coupling.id}`, {
+        method: 'put',
         body: JSON.stringify(data),
         headers: {
           Authorization: `Bearer ${localStorage.getItem('whitenetWebToken')}`,
@@ -26,39 +23,18 @@ function CouplingCreactionModal({
         },
       },
     );
-    if (response.ok) {
-      loadMap();
-      closePopup();
-    } else {
-      closePopup();
+    if (!response.ok) {
+      alert('Произошла непредвиденная ошибка. Проверьте соединение и повторите операцию');
     }
   };
 
-  const addUser = () => {
+  const handleChangeBtn = () => {
     const data = {
       name: couplingName,
-      lat: e.lngLat.lat.toFixed(4),
-      lng: e.lngLat.lng.toFixed(4),
       description: couplingDescription,
-      type_of_box: 'client',
-      is_available: true,
     };
 
     postCoupling(data);
-  };
-
-  const addBox = () => {
-    if (couplingName.length > 1 && couplingDescription.length > 1) {
-      const data = {
-        name: couplingName,
-        lat: e.lngLat.lat.toFixed(4),
-        lng: e.lngLat.lng.toFixed(4),
-        description: couplingDescription,
-        type_of_box: 'regular',
-      };
-
-      postCoupling(data);
-    }
   };
 
 
@@ -70,22 +46,22 @@ function CouplingCreactionModal({
             <label htmlFor="couplingName">Название муфты</label>
           </div>
           <div>
-            <input type="text" defaultValue="" id="couplingName" onChange={({ target }) => setName(target.value)} />
+            <input type="text" defaultValue={coupling.name} id="couplingName" onChange={({ target }) => setName(target.value)} />
           </div>
           <div>
             <label htmlFor="couplingDescription">Описание муфты</label>
           </div>
           <div>
-            <textarea defaultValue="" id="couplingDescription" onChange={({ target }) => setDescription(target.value)} />
+            <textarea defaultValue={coupling.description} id="couplingDescription" onChange={({ target }) => setDescription(target.value)} />
           </div>
-          <button onClick={() => (userCoupling ? addUser() : addBox())}>Создать муфту</button>
+          <button onClick={() => { handleChangeBtn(); setShow(false); }}>Изменить данные</button>
         </div>
       </div>
     </Modal>
   );
 }
 
-export default styled(CouplingCreactionModal)`
+export default styled(CouplingDataChangeModal)`
     button{
         width: 100%;
         border: 1px solid #FFFAFA;

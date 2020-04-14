@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import ReactMapboxGl, { MapContext, Popup } from 'react-mapbox-gl';
+import React, { useEffect, useState } from 'react';
+import ReactMapboxGl, { Popup } from 'react-mapbox-gl';
 import styled from 'styled-components';
 // eslint-disable-next-line import/extensions
 import mapLoadHandler from './scripts/mapLoadHandler.js';
@@ -11,8 +11,21 @@ const Map = ReactMapboxGl({
 const center = [40.174844, 55.131590];
 const zoom = [9];
 
-function MapBox({ token, className }) {
+function MapBox({ className, token }) {
   const [popup, setPopup] = useState({});
+  const [mapInstance, setMap] = useState();
+
+  const onStyleLoad = (map) => {
+    setMap(map);
+  };
+
+  useEffect(() => {
+    if (mapInstance) {
+      mapLoadHandler(mapInstance, token, setPopup);
+    }
+
+    return undefined;
+  }, [token, mapInstance]);
 
   return (
     <Map
@@ -21,10 +34,8 @@ function MapBox({ token, className }) {
       className={className}
       center={center}
       zoom={zoom}
+      onStyleLoad={onStyleLoad}
     >
-      <MapContext.Consumer>
-        {(map) => mapLoadHandler(map, token, setPopup)}
-      </MapContext.Consumer>
       {!popup.coordinates ? null : (
         <Popup coordinates={popup.coordinates}>
           {popup.content}
